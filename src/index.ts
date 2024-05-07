@@ -22,7 +22,7 @@ export default class Bot extends Base {
     this.slashCommands = new Collection();
     this.events = new Collection();
   }
-  
+
   async loadEvents() {
     const path = "src/events"
     var modules = fs.readdirSync(path);
@@ -30,7 +30,7 @@ export default class Bot extends Base {
       var events = fs.readdirSync(`${path}/${module}`);
       events.forEach(async command => {
         const BotEvent = await import(`./events/${module}/${command}`);
-        const evnt = new BotEvent.default(this.client);
+        const evnt = new BotEvent.default(this);
         this.client.on(evnt.name, (...args) => evnt.run(...args));
         this.events.set(evnt.name, evnt);
         Logger.log(`[event] ${evnt.name} loaded.`);
@@ -38,27 +38,32 @@ export default class Bot extends Base {
     })
   }
 
-  async registerCommands() {
-    const path = "src/commands"
+  async loadCommands() {
+    const path = "src/commands";
     var modules = fs.readdirSync(path);
-    modules.forEach(module => {
-      var commands = fs.readdirSync(`${path}/${module}`);
-      commands.forEach(async command => {
-        const ImportedCommand = await import(`./commands/${module}/${command}`);
-        const cmd = new ImportedCommand.default(this.client);
-        this.slashCommands.set(cmd.name, cmd);
-        Logger.log(`[command] ${cmd.name} loaded.`);
-      });
-    })
+    await Promise.all(
+      modules.map(async (module) => {
+        var commands = fs.readdirSync(`${path}/${module}`);
+        await Promise.all(
+          commands.map(async (command) => {
+            const ImportedCommand = await import(`./commands/${module}/${command}`);
+            const cmd = new ImportedCommand.default(this.client);
+            this.slashCommands.set(cmd.name, cmd);
+          })
+        );
+      })
+    );
   }
+
+  
 
   async run() {
     this.db.guild = Guild;
     this.db.user = User;
     this.db.bot = BotDatabase;
-    
+
     this.loadEvents();
-    this.registerCommands();
+    await this.loadCommands();
     this.client.login(process.env.TOKEN);
 
   }

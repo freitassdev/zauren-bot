@@ -14,26 +14,26 @@ export default class InteractionCreateEvent extends BotEvent {
             Logger.error(`[interaction] error while deferring reply: ${e}`);
         });
 
-        if (interaction.user.bot) return;
+        // if (interaction?.user?.bot !== null) return;
+        if (!interaction.isCommand()) return;
+        if (!interaction.member) return;
         if (!interaction.guild) {
-            await interaction.editReply({ content: `Me desculpe **${interaction.user.username}**! Mas não é possivel usar Comandos na DM, tente isso em um Servidor.`, ephemeral: true } as InteractionEditReplyOptions);
+            await interaction.editReply({ content: `Me desculpe **${interaction.member.user.username}**! Mas não é possivel usar Comandos na DM, tente isso em um Servidor.`, ephemeral: true } as InteractionEditReplyOptions);
             return;
         }
 
-        const userdb = await this.bot.db.user.findOne({ where: { id: interaction.user.id } });
-        const guilddb = await this.bot.db.guild.findOne({ where: { id: interaction.guild.id } });
-        if (!userdb) {
-            await this.bot.db.user.create({ uId: interaction.user.id });
-        }
+        // const userdb = await this.bot.db.user.findOne({ id: interaction.member.user.id });
+        // const guilddb = await this.bot.db.guild.findOne({ id: interaction.guild.id });
+        // if (!userdb) {
+        //     await this.bot.db.user.create({ uId: interaction.member.user.id });
+        // }
 
-        if (!guilddb) {
-            await this.bot.db.guild.create({ gId: interaction.guild.id });
-        }
-
-        const cmd = this.bot.slashCommands.get(interaction.commandName);
-        if(cmd) {
-            const commandClass = new cmd(this.bot, interaction);
-            commandClass.run();
+        // if (!guilddb) {
+        //     await this.bot.db.guild.create({ gId: interaction.guild.id });
+        // }
+        const Command = this.bot.slashCommands.get(interaction.commandName);
+        if (Command) {
+            Command.run(this.bot, interaction)
         }
         return Promise.resolve();
     }

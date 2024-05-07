@@ -3,16 +3,15 @@ import Bot from "../../index";
 import Command from "../../structures/command/command";
 
 export default class PingCommand extends Command {
-    constructor(bot: Bot, interaction: ChatInputCommandInteraction) {
-        super(bot, interaction);
+    constructor() {
+        super()
         this.name = "ping";
         this.description = "Ping the bot";
         this.aliases = ["pong"];
     }
-    async run() {
-        this.interaction.reply({
+    async run(bot: Bot, interaction: ChatInputCommandInteraction) {
+        interaction.editReply({
             content: "Pong!",
-            ephemeral: true
         });
     }
 }
