@@ -1,5 +1,5 @@
 import { model, connect, ConnectOptions } from 'mongoose';
-import c from 'colors'
+import Logger from '../utils/logger';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -17,9 +17,10 @@ const Bot = model<IBot>('Bot', botSchema);
 try {
     const options: ConnectOptions = {}
     await connect(process.env.MONGO_URI ?? "", options);
-    console.log(c.bgGreen("DATABASE - Conectado com sucesso."));
+    Logger.log("[database] connection sucessful.");
 } catch (e) {
-    console.error("DATABASE ERROR - Não foi possivel conectar.", e);
+    Logger.error("[database] cannot connect to mongodb server.");
+    console.error(e);
 }	
 
 export {

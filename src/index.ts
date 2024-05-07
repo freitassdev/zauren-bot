@@ -3,6 +3,7 @@ import { Guild, User, Bot as BotDatabase } from './database';
 import c from 'colors';
 import fs from 'node:fs';
 import { promisify } from 'node:util';
+import Logger from './utils/logger';
 
 export default class Bot extends Base {
   public slashCommands: Collection<string, any> = new Collection();
@@ -31,6 +32,22 @@ export default class Bot extends Base {
         const BotEvent = await import(`./events/${module}/${command}`);
         const evnt = new BotEvent.default(this.client);
         this.client.on(evnt.name, (...args) => evnt.run(...args));
+        this.events.set(evnt.name, evnt);
+        Logger.log(`[event] ${evnt.name} loaded.`);
+      });
+    })
+  }
+
+  async registerCommands() {
+    const path = "src/commands"
+    var modules = fs.readdirSync(path);
+    modules.forEach(module => {
+      var commands = fs.readdirSync(`${path}/${module}`);
+      commands.forEach(async command => {
+        const ImportedCommand = await import(`./commands/${module}/${command}`);
+        const cmd = new ImportedCommand.default(this.client);
+        this.slashCommands.set(cmd.name, cmd);
+        Logger.log(`[command] ${cmd.name} loaded.`);
       });
     })
   }
@@ -39,8 +56,9 @@ export default class Bot extends Base {
     this.db.guild = Guild;
     this.db.user = User;
     this.db.bot = BotDatabase;
-    console.log(c.bgGreen("bot.ts - Databases loaded."));
+    
     this.loadEvents();
+    this.registerCommands();
     this.client.login(process.env.TOKEN);
 
   }

@@ -1,13 +1,13 @@
-import { Client } from "discord.js";
-import BotEvent from "../../structures/event/Event";
-
+import BotEvent from "../../structures/event/event";
+import Logger from "../../utils/logger";
+import Bot from "src";
 export default class ReadyEvent extends BotEvent {
-    constructor(client: Client<true>) {
-        super(client);
+    constructor(bot: Bot) {
+        super(bot);
         this.name = "ready";
     }
     public run(...args: any[]): Promise<void> {
-        console.log("READY - Bot loaded at", args[0].user.username + "#" + args[0].user.discriminator);
+        Logger.log("[ready] bot loaded at " + args[0].user.username + "#" + args[0].user.discriminator);
         return Promise.resolve();
     }
 }

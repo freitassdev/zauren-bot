@@ -1,10 +1,10 @@
-import { Client } from "discord.js";
+import Bot from "src";
 
 export default class BotEvent {
-    public client: Client<true>;
+    public bot: Bot;
     public name: string = "";
-    constructor(client: Client<true>) {
-        this.client = client;
+    constructor(bot: Bot) {
+        this.bot = bot;
     }
     public async run(...args: any[]): Promise<void> {
         throw new Error(`The run method has not been implemented by ${this.name}`);
